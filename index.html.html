@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Facilities &amp; Equipment Logbook</title>
+<style>
+  :root{
+    --cream:#F6F3EA;
+    --card:#FFFFFF;
+    --teal:#3E7C6B;
+    --teal-dark:#2C5C4F;
+    --gold:#C79A2E;
+    --ink:#2F2F2C;
+    --ink-soft:#6B6B64;
+    --line:#DDD8C8;
+    --danger:#B5473A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:840px;margin:0 auto;}
+  header.top{
+    text-align:center;
+    margin-bottom:22px;
+  }
+  header.top .mark{
+    font-family:Georgia,'Times New Roman',serif;
+    font-size:13px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--teal-dark);
+    margin-bottom:6px;
+  }
+  header.top h1{
+    font-family:Georgia,'Times New Roman',serif;
+    font-size:28px;
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+  header.top p{
+    margin:0;
+    color:var(--ink-soft);
+    font-size:14px;
+  }
+  .tabs{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin:22px 0;
+    flex-wrap:wrap;
+  }
+  .tab-btn{
+    padding:10px 18px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:var(--card);
+    color:var(--ink-soft);
+    font-size:14px;
+    cursor:pointer;
+    font-weight:600;
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  .tab-btn.active{
+    background:var(--teal);
+    border-color:var(--teal);
+    color:#fff;
+  }
+  .tab-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px;
+    margin-bottom:18px;
+  }
+  .card h2{
+    font-family:Georgia,'Times New Roman',serif;
+    font-size:18px;
+    margin:0 0 4px;
+    color:var(--teal-dark);
+  }
+  .card .sub{color:var(--ink-soft);font-size:13px;margin:0 0 16px;}
+
+  .cat-select{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .cat-select button{
+    border:1px solid var(--line);
+    background:#FBFAF5;
+    border-radius:10px;
+    padding:14px 8px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+    text-align:center;
+    line-height:1.3;
+  }
+  .cat-select button.active{
+    border-color:var(--teal);
+    background:var(--teal);
+    color:#fff;
+  }
+  @media (max-width:520px){
+    .cat-select{grid-template-columns:1fr;}
+  }
+
+  label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink);
+    margin:14px 0 6px;
+  }
+  label.first{margin-top:0;}
+  select,input[type=text],input[type=date],textarea{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:14px;
+    font-family:inherit;
+    background:#fff;
+    color:var(--ink);
+  }
+  textarea{min-height:64px;resize:vertical;}
+  select:focus,input:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:1px;}
+
+  .checks{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+    margin-top:6px;
+  }
+  @media (max-width:520px){.checks{grid-template-columns:1fr;}}
+  .checks label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:500;
+    font-size:14px;
+    margin:0;
+    background:#FBFAF5;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:9px 10px;
+  }
+  .checks input{width:auto;}
+
+  .btn{
+    display:inline-block;
+    background:var(--teal);
+    color:#fff;
+    border:none;
+    padding:12px 22px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:18px;
+  }
+  .btn:hover{background:var(--teal-dark);}
+  .btn.secondary{
+    background:transparent;
+    color:var(--teal-dark);
+    border:1px solid var(--teal);
+  }
+  .btn.danger{background:var(--danger);}
+  .btn:disabled{opacity:.6;cursor:default;}
+
+  .status-msg{
+    margin-top:12px;
+    font-size:13px;
+    padding:10px 12px;
+    border-radius:8px;
+  }
+  .status-msg.ok{background:#E7F1EA;color:var(--teal-dark);}
+  .status-msg.err{background:#FBE9E7;color:var(--danger);}
+
+  .gate{
+    max-width:340px;
+    margin:0 auto;
+    text-align:center;
+  }
+  .gate p{color:var(--ink-soft);font-size:13px;}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+  }
+  th,td{
+    text-align:left;
+    padding:8px 8px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  th{
+    color:var(--ink-soft);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .tag{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+    color:#fff;
+  }
+  .tag.vehicle{background:#4E7FB3;}
+  .tag.aircon{background:var(--gold);}
+  .tag.instrument{background:#8A5DA8;}
+
+  .filters{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .filters select{width:auto;min-width:150px;}
+
+  .row-flex{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+  .row-flex > div{flex:1;min-width:140px;}
+
+  .area-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:8px;
+    align-items:center;
+  }
+  .area-row input[type=text]{flex:2;}
+  .area-row input[type=number]{flex:1;width:100%;}
+  .area-row button{
+    flex:0 0 auto;
+    background:none;
+    border:1px solid var(--line);
+    color:var(--danger);
+    border-radius:8px;
+    padding:9px 12px;
+    cursor:pointer;
+    font-size:13px;
+  }
+  .empty-note{
+    color:var(--ink-soft);
+    font-size:13px;
+    text-align:center;
+    padding:20px 0;
+  }
+  .toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  /* compact multi-select */
+  .ms{position:relative;}
+  .ms-toggle{
+    width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;
+    padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;
+    font-size:14px;font-family:inherit;color:var(--ink);cursor:pointer;text-align:left;
+  }
+  .ms-toggle:focus-visible{outline:2px solid var(--gold);outline-offset:1px;}
+  .ms-summary{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .ms-summary.placeholder{color:var(--ink-soft);}
+  .ms-caret{color:var(--ink-soft);font-size:12px;}
+  .ms-panel{
+    position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;
+    background:#fff;border:1px solid var(--line);border-radius:10px;
+    box-shadow:0 6px 18px rgba(47,47,44,.12);padding:8px;
+  }
+  .ms-search{margin-bottom:6px;}
+  .ms-list{max-height:240px;overflow-y:auto;}
+  .ms-list label{
+    display:flex;align-items:center;gap:8px;margin:0;padding:7px 8px;
+    font-weight:500;font-size:14px;border-radius:6px;cursor:pointer;
+  }
+  .ms-list label:hover{background:#FBFAF5;}
+  .ms-list input{width:auto;}
+  .ms-foot{display:flex;justify-content:space-between;align-items:center;padding-top:8px;margin-top:6px;border-top:1px solid var(--line);}
+  .ms-done{background:var(--teal);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;}
+  .ms-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .ms-chips:empty{display:none;}
+  .ms-chip{
+    display:inline-flex;align-items:center;gap:4px;background:#E7F1EA;color:var(--teal-dark);
+    border-radius:999px;padding:3px 4px 3px 10px;font-size:12px;font-weight:600;
+  }
+  .ms-chip button{border:none;background:none;color:var(--teal-dark);cursor:pointer;font-size:14px;line-height:1;padding:0 4px;}
+  .small-link{
+    background:none;border:none;color:var(--teal-dark);font-size:12px;
+    text-decoration:underline;cursor:pointer;padding:0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="mark">Tabernacle of Worship</div>
+    <h1>Facilities &amp; Equipment Logbook</h1>
+    <p>Vehicles &middot; Air-conditioners &middot; Worship instruments</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="submit">Submit Entry</button>
+    <button class="tab-btn" data-tab="admin">Admin Report</button>
+  </div>
+
+  <!-- ============ SUBMIT PANEL ============ -->
+  <div class="panel active" id="panel-submit">
+    <div class="card">
+      <h2>New log entry</h2>
+      <p class="sub">Choose what you're logging, fill in the details, and submit. Everyone can add entries; only admins can view the full report.</p>
+
+      <div class="cat-select">
+        <button data-cat="vehicle" class="active">Motorbike / Sedan / MPV / Van<br><span style="font-weight:400">Wash, Warm-up &amp; Service</span></button>
+        <button data-cat="aircon">Air-Conditioner<br><span style="font-weight:400">Cleaning &amp; Service</span></button>
+        <button data-cat="instrument">Worship Team<br><span style="font-weight:400">Instruments Cleaning &amp; Maintenance</span></button>
+      </div>
+
+      <form id="log-form">
+        <!-- VEHICLE FIELDS -->
+        <div class="fieldset" data-fields="vehicle">
+          <label class="first">Vehicle type (select all that apply)</label>
+          <div class="checks" id="v-type">
+            <label><input type="checkbox" value="Motorbike"> Motorbike</label>
+            <label><input type="checkbox" value="Van"> Van</label>
+            <label><input type="checkbox" value="Sedan"> Sedan</label>
+            <label><input type="checkbox" value="MPV"> MPV</label>
+          </div>
+
+          <label>Vehicle name / plate no.</label>
+          <input type="text" id="v-name" placeholder="e.g. Van 2 - ABC 1234, Sedan - WXY 5678">
+
+          <label>What was done (select all that apply)</label>
+          <div class="checks" id="v-service">
+            <label><input type="checkbox" value="Wash"> Wash</label>
+            <label><input type="checkbox" value="Warm-up"> Warm-up</label>
+            <label><input type="checkbox" value="Service"> Service</label>
+          </div>
+        </div>
+
+        <!-- AIRCON FIELDS -->
+        <div class="fieldset" data-fields="aircon" style="display:none">
+          <label class="first">Location(s) (select all that apply)</label>
+          <div class="ms" id="a-area">
+            <button type="button" class="ms-toggle" aria-haspopup="listbox" aria-expanded="false">
+              <span class="ms-summary">Select location(s)</span>
+              <span class="ms-caret" aria-hidden="true">&#9662;</span>
+            </button>
+            <div class="ms-panel" hidden>
+              <input type="text" class="ms-search" placeholder="Search locations...">
+              <div class="ms-list">
+              <label><input type="checkbox" value="Multipurpose Hall"> Multipurpose Hall</label>
+              <label><input type="checkbox" value="Cafeteria"> Cafeteria</label>
+              <label><input type="checkbox" value="Foyer"> Foyer</label>
+              <label><input type="checkbox" value="Prayer Tower"> Prayer Tower</label>
+              <label><input type="checkbox" value="Office Ground"> Office Ground</label>
+              <label><input type="checkbox" value="Office Level 1"> Office Level 1</label>
+              <label><input type="checkbox" value="Office Room 1 (Ground)"> Office Room 1 (Ground)</label>
+              <label><input type="checkbox" value="Office Room 2 (Ground)"> Office Room 2 (Ground)</label>
+              <label><input type="checkbox" value="Office Room 3 (Ground)"> Office Room 3 (Ground)</label>
+              <label><input type="checkbox" value="Office Room 4 (Ground)"> Office Room 4 (Ground)</label>
+              <label><input type="checkbox" value="Office Room 5 (L1)"> Office Room 5 (L1)</label>
+              <label><input type="checkbox" value="Office Room 6 (L1)"> Office Room 6 (L1)</label>
+              <label><input type="checkbox" value="Office Room 7 (L1)"> Office Room 7 (L1)</label>
+              <label><input type="checkbox" value="Office Room 8 (L1)"> Office Room 8 (L1)</label>
+              <label><input type="checkbox" value="Office Room 9 (L1)"> Office Room 9 (L1)</label>
+              <label><input type="checkbox" value="Office Room 10 (L1)"> Office Room 10 (L1)</label>
+              <label><input type="checkbox" value="Office Room 11 (L1)"> Office Room 11 (L1)</label>
+              <label><input type="checkbox" value="Office Room 12 (L1)"> Office Room 12 (L1)</label>
+              <label><input type="checkbox" value="Meeting Room 1"> Meeting Room 1</label>
+              <label><input type="checkbox" value="Meeting Room 2"> Meeting Room 2</label>
+              <label><input type="checkbox" value="Meeting Room 3"> Meeting Room 3</label>
+              <label><input type="checkbox" value="Nursery Room"> Nursery Room</label>
+              <label><input type="checkbox" value="Classroom 1"> Classroom 1</label>
+              <label><input type="checkbox" value="Classroom 2A"> Classroom 2A</label>
+              <label><input type="checkbox" value="Classroom 2B"> Classroom 2B</label>
+              <label><input type="checkbox" value="Classroom 3"> Classroom 3</label>
+              <label><input type="checkbox" value="Classroom 4"> Classroom 4</label>
+              <label><input type="checkbox" value="Classroom 5"> Classroom 5</label>
+              <label><input type="checkbox" value="Classroom 6"> Classroom 6</label>
+              <label><input type="checkbox" value="Classroom 7"> Classroom 7</label>
+              <label><input type="checkbox" value="Apartment 1"> Apartment 1</label>
+              <label><input type="checkbox" value="Apartment 2"> Apartment 2</label>
+              <label><input type="checkbox" value="Apartment 3"> Apartment 3</label>
+              <label><input type="checkbox" value="Apartment 4"> Apartment 4</label>
+              <label><input type="checkbox" value="Youth Centre"> Youth Centre</label>
+              <label><input type="checkbox" value="Studio Room"> Studio Room</label>
+              <label><input type="checkbox" value="Female Dressing Room"> Female Dressing Room</label>
+              <label><input type="checkbox" value="Male Dressing Room"> Male Dressing Room</label>
+              <label><input type="checkbox" value="__other__"> Others, specify</label>
+              </div>
+              <div class="ms-foot">
+                <button type="button" class="small-link ms-clear">Clear all</button>
+                <button type="button" class="ms-done">Done</button>
+              </div>
+            </div>
+            <div class="ms-chips"></div>
+          </div>
+          <input type="text" id="a-area-other" placeholder="Specify location" style="display:none;margin-top:8px;">
+
+          <label>Total no. of units serviced/washed</label>
+          <select id="a-units-select">
+            <option value="">Select number</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+            <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+            <option value="__other__">Other (key in manually)</option>
+          </select>
+          <input type="number" id="a-units-other" min="1" placeholder="Enter number of units" style="display:none;margin-top:8px;">
+
+          <label>What was done (select all that apply)</label>
+          <div class="checks" id="a-service">
+            <label><input type="checkbox" value="Filter/coil cleaning"> Filter/coil cleaning</label>
+            <label><input type="checkbox" value="Servicing"> Servicing</label>
+            <label><input type="checkbox" value="Repair"> Repair</label>
+            <label><input type="checkbox" value="Gas top-up"> Gas top-up</label>
+          </div>
+        </div>
+
+        <!-- INSTRUMENT FIELDS -->
+        <div class="fieldset" data-fields="instrument" style="display:none">
+          <label class="first">Location</label>
+          <select id="i-location">
+            <option>Auditorium</option>
+            <option>Chapel</option>
+            <option>Multipurpose Hall (MPH)</option>
+          </select>
+
+          <label>Instrument(s) cleaned</label>
+          <div class="checks" id="i-instruments">
+            <label><input type="checkbox" value="Piano"> Piano</label>
+            <label><input type="checkbox" value="Keyboard"> Keyboard</label>
+            <label><input type="checkbox" value="Acoustic guitar"> Acoustic guitar</label>
+            <label><input type="checkbox" value="Electric guitar"> Electric guitar</label>
+            <label><input type="checkbox" value="Bass guitar"> Bass guitar</label>
+            <label><input type="checkbox" value="Drum kit"> Drum kit</label>
+            <label><input type="checkbox" value="Percussion"> Percussion</label>
+            <label><input type="checkbox" value="Microphones"> Microphones</label>
+            <label><input type="checkbox" value="Mixer / sound console"> Mixer / sound console</label>
+            <label><input type="checkbox" value="Other"> Other (specify in notes)</label>
+          </div>
+        </div>
+
+        <!-- SHARED FIELDS -->
+        <label>Date</label>
+        <input type="date" id="log-date">
+
+        <label>Done by</label>
+        <input type="text" id="log-by" placeholder="Name">
+
+        <label>Notes (optional)</label>
+        <textarea id="log-notes" placeholder="Anything worth flagging..."></textarea>
+
+        <button type="submit" class="btn" id="submit-btn">Submit entry</button>
+        <div id="submit-status"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ ADMIN PANEL ============ -->
+  <div class="panel" id="panel-admin">
+
+    <div class="card gate" id="admin-gate">
+      <h2 style="text-align:center">Admin access</h2>
+      <p>Enter the admin passcode to view the report.</p>
+      <input type="text" id="admin-pass" placeholder="Passcode" style="text-align:center">
+      <button class="btn" id="admin-unlock">Unlock</button>
+      <div id="admin-gate-status"></div>
+    </div>
+
+    <div id="admin-content" style="display:none">
+
+      <div class="card">
+        <div class="toolbar">
+          <h2 style="margin:0">All submissions</h2>
+          <div>
+            <button class="btn secondary" id="export-csv">Export CSV</button>
+            <button class="small-link" id="refresh-log" style="margin-left:12px">Refresh</button>
+          </div>
+        </div>
+        <div class="filters">
+          <select id="filter-cat">
+            <option value="">All categories</option>
+            <option value="vehicle">Vehicles</option>
+            <option value="aircon">Air-conditioners</option>
+            <option value="instrument">Instruments</option>
+          </select>
+        </div>
+        <div id="log-table-wrap">
+          <p class="empty-note">Loading entries...</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+const ADMIN_PASSCODE = "TOW2026"; // change this to your own passcode
+const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbzjgw9DD8QCJqWZJ7bzLszQHIFQ989zzkT_pU928ud_dCKvhNvuqjJjjOMyk73giFBDcg/exec";
+
+// ---------- tab switching ----------
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    document.getElementById("panel-"+btn.dataset.tab).classList.add("active");
+    if(btn.dataset.tab==="admin" && adminUnlocked){ loadEntries(); }
+  });
+});
+
+// ---------- category switching ----------
+let currentCat = "vehicle";
+document.querySelectorAll(".cat-select button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".cat-select button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentCat = btn.dataset.cat;
+    document.querySelectorAll(".fieldset").forEach(fs=>{
+      fs.style.display = (fs.dataset.fields===currentCat) ? "block" : "none";
+    });
+  });
+});
+
+// default date = today
+document.getElementById("log-date").valueAsDate = new Date();
+
+// ---------- aircon: custom area + units fields ----------
+(function(){
+  const ms = document.getElementById("a-area");
+  const toggle = ms.querySelector(".ms-toggle");
+  const panel = ms.querySelector(".ms-panel");
+  const search = ms.querySelector(".ms-search");
+  const summary = ms.querySelector(".ms-summary");
+  const chips = ms.querySelector(".ms-chips");
+  const boxes = Array.from(ms.querySelectorAll(".ms-list input"));
+  const otherInput = document.getElementById("a-area-other");
+
+  function open(o){
+    panel.hidden = !o;
+    toggle.setAttribute("aria-expanded", o ? "true" : "false");
+    if(o){ search.value=""; filter(""); search.focus(); }
+  }
+  function filter(q){
+    q = q.toLowerCase();
+    boxes.forEach(b=>{ b.parentElement.style.display = b.parentElement.textContent.toLowerCase().includes(q) ? "" : "none"; });
+  }
+  function labelOf(b){ return b.value==="__other__" ? "Others" : b.value; }
+  function update(){
+    const sel = boxes.filter(b=>b.checked);
+    if(sel.length===0){ summary.textContent="Select location(s)"; summary.classList.add("placeholder"); }
+    else { summary.textContent = sel.length + " location" + (sel.length>1?"s":"") + " selected"; summary.classList.remove("placeholder"); }
+    chips.innerHTML = "";
+    sel.forEach(b=>{
+      const c = document.createElement("span");
+      c.className = "ms-chip";
+      c.textContent = labelOf(b);
+      const x = document.createElement("button");
+      x.type = "button"; x.setAttribute("aria-label","Remove "+labelOf(b)); x.innerHTML = "&times;";
+      x.addEventListener("click", ()=>{ b.checked=false; update(); });
+      c.appendChild(x); chips.appendChild(c);
+    });
+    otherInput.style.display = ms.querySelector('input[value="__other__"]').checked ? "block" : "none";
+  }
+  toggle.addEventListener("click", ()=>open(panel.hidden));
+  search.addEventListener("input", e=>filter(e.target.value));
+  boxes.forEach(b=>b.addEventListener("change", update));
+  ms.querySelector(".ms-done").addEventListener("click", ()=>{ open(false); toggle.focus(); });
+  ms.querySelector(".ms-clear").addEventListener("click", ()=>{ boxes.forEach(b=>b.checked=false); update(); });
+  document.addEventListener("click", e=>{ if(!ms.contains(e.target)) open(false); });
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !panel.hidden){ open(false); toggle.focus(); } });
+  ms.resetMs = ()=>{ boxes.forEach(b=>b.checked=false); open(false); update(); };
+  update();
+})();
+document.getElementById("a-units-select").addEventListener("change", e=>{
+  document.getElementById("a-units-other").style.display = (e.target.value === "__other__") ? "block" : "none";
+});
+
+// ---------- submit entry ----------
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+document.getElementById("log-form").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const statusEl = document.getElementById("submit-status");
+  const btn = document.getElementById("submit-btn");
+  const date = document.getElementById("log-date").value;
+  const by = document.getElementById("log-by").value.trim();
+  const notes = document.getElementById("log-notes").value.trim();
+
+  if(!date || !by){
+    statusEl.innerHTML = '<div class="status-msg err">Please fill in the date and who did it.</div>';
+    return;
+  }
+
+  let entry = { id: "log_"+Date.now()+"_"+Math.random().toString(36).slice(2,8),
+                category: currentCat, date, by, notes, submittedAt: new Date().toISOString() };
+
+  if(currentCat==="vehicle"){
+    const vTypes = Array.from(document.querySelectorAll("#v-type input:checked")).map(c=>c.value);
+    const vServices = Array.from(document.querySelectorAll("#v-service input:checked")).map(c=>c.value);
+    if(vTypes.length===0){
+      statusEl.innerHTML = '<div class="status-msg err">Please select at least one vehicle type.</div>';
+      return;
+    }
+    if(vServices.length===0){
+      statusEl.innerHTML = '<div class="status-msg err">Please select at least one thing that was done.</div>';
+      return;
+    }
+    entry.vehicleType = vTypes.join(", ");
+    entry.vehicleName = document.getElementById("v-name").value.trim();
+    entry.service = vServices.join(", ");
+    if(!entry.vehicleName){
+      statusEl.innerHTML = '<div class="status-msg err">Please enter the vehicle name / plate no.</div>';
+      return;
+    }
+  } else if(currentCat==="aircon"){
+    const areaSel = Array.from(document.querySelectorAll("#a-area .ms-list input:checked")).map(c=>c.value);
+    const areas = areaSel.filter(v=>v!=="__other__");
+    if(areaSel.includes("__other__")){
+      const otherVal = document.getElementById("a-area-other").value.trim();
+      if(!otherVal){
+        statusEl.innerHTML = '<div class="status-msg err">Please specify the other location.</div>';
+        return;
+      }
+      areas.push(otherVal);
+    }
+    entry.area = areas.join(", ");
+    const unitsSel = document.getElementById("a-units-select").value;
+    entry.unit = (unitsSel === "__other__") ? document.getElementById("a-units-other").value.trim() : unitsSel;
+    const aServices = Array.from(document.querySelectorAll("#a-service input:checked")).map(c=>c.value);
+    entry.service = aServices.join(", ");
+    if(!entry.area){
+      statusEl.innerHTML = '<div class="status-msg err">Please select at least one location.</div>';
+      return;
+    }
+    if(!entry.unit){
+      statusEl.innerHTML = '<div class="status-msg err">Please select or key in the number of units.</div>';
+      return;
+    }
+    if(aServices.length===0){
+      statusEl.innerHTML = '<div class="status-msg err">Please select at least one thing that was done.</div>';
+      return;
+    }
+  } else if(currentCat==="instrument"){
+    const checked = Array.from(document.querySelectorAll("#i-instruments input:checked")).map(c=>c.value);
+    if(checked.length===0){
+      statusEl.innerHTML = '<div class="status-msg err">Please select at least one instrument.</div>';
+      return;
+    }
+    entry.instruments = checked;
+    entry.area = document.getElementById("i-location").value;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Submitting...";
+  try{
+    const res = await fetch(SHEET_ENDPOINT, {
+      method: "POST",
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify({ action: "submitEntry", entry: entry })
+    });
+    const result = await res.json();
+    if(!result || result.status !== "ok") throw new Error(result && result.message ? result.message : "save failed");
+    statusEl.innerHTML = '<div class="status-msg ok">Entry submitted. Thank you!</div>';
+    document.getElementById("log-form").reset();
+    document.getElementById("log-date").valueAsDate = new Date();
+    document.querySelectorAll("#i-instruments input, #v-type input, #v-service input, #a-service input").forEach(c=>c.checked=false);
+    document.getElementById("a-area").resetMs();
+    document.getElementById("a-units-other").style.display = "none";
+  }catch(err){
+    statusEl.innerHTML = '<div class="status-msg err">Could not save this entry. Error: ' + escapeHtml(err && err.message ? err.message : String(err)) + '</div>';
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "Submit entry";
+  }
+});
+
+// ---------- admin gate ----------
+let adminUnlocked = false;
+let adminPasscodeValue = "";
+document.getElementById("admin-unlock").addEventListener("click", unlockAdmin);
+document.getElementById("admin-pass").addEventListener("keydown", e=>{ if(e.key==="Enter") unlockAdmin(); });
+
+function unlockAdmin(){
+  const val = document.getElementById("admin-pass").value;
+  const statusEl = document.getElementById("admin-gate-status");
+  if(val === ADMIN_PASSCODE){
+    adminUnlocked = true;
+    adminPasscodeValue = val;
+    document.getElementById("admin-gate").style.display = "none";
+    document.getElementById("admin-content").style.display = "block";
+    loadEntries();
+  }else{
+    statusEl.innerHTML = '<div class="status-msg err">Incorrect passcode.</div>';
+  }
+}
+
+// ---------- load & render entries ----------
+let allEntries = [];
+
+async function loadEntries(){
+  const wrap = document.getElementById("log-table-wrap");
+  wrap.innerHTML = '<p class="empty-note">Loading entries...</p>';
+  try{
+    const res = await fetch(SHEET_ENDPOINT + "?action=getEntries&pass=" + encodeURIComponent(adminPasscodeValue));
+    const data = await res.json();
+    if(data.status === "error") throw new Error(data.message || "unauthorized");
+    allEntries = (data.entries || []).map(e=>({
+      id: e.ID, category: (e.Category||"").toLowerCase(), date: e.Date, by: e.DoneBy, notes: e.Notes,
+      vehicleType: e.VehicleType, vehicleName: e.VehicleName, service: e.Service,
+      area: e.Area, unit: e.Unit, submittedAt: e.Timestamp,
+      instruments: e.Instruments ? String(e.Instruments).split(",").map(s=>s.trim()).filter(Boolean) : []
+    }));
+    allEntries.sort((a,b)=> new Date(b.date) - new Date(a.date));
+    renderTable();
+  }catch(e){
+    wrap.innerHTML = '<p class="empty-note">Could not load entries: ' + escapeHtml(e.message||String(e)) + '</p>';
+  }
+}
+
+function formatDMY(isoDate){
+  if(!isoDate) return "";
+  const parts = String(isoDate).split("-");
+  if(parts.length !== 3) return isoDate;
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
+function renderTable(){
+  const wrap = document.getElementById("log-table-wrap");
+  const filterCat = document.getElementById("filter-cat").value;
+  const rows = allEntries.filter(e=> !filterCat || e.category===filterCat);
+
+  if(rows.length===0){
+    wrap.innerHTML = '<p class="empty-note">No entries yet.</p>';
+    return;
+  }
+
+  let html = '<table><thead><tr><th>Date</th><th>Category</th><th>Details</th><th>Done by</th><th>Notes</th><th>Submitted at</th></tr></thead><tbody>';
+  rows.forEach(e=>{
+    let details = "";
+    let tag = "";
+    if(e.category==="vehicle"){
+      tag = '<span class="tag vehicle">Vehicle</span>';
+      details = `${escapeHtml(e.vehicleType)} - ${escapeHtml(e.vehicleName)}<br><span style="color:var(--ink-soft)">${escapeHtml(e.service)}</span>`;
+    } else if(e.category==="aircon"){
+      tag = '<span class="tag aircon">Aircon</span>';
+      details = `${escapeHtml(e.area)} - ${escapeHtml(e.unit)} unit(s)<br><span style="color:var(--ink-soft)">${escapeHtml(e.service)}</span>`;
+    } else if(e.category==="instrument"){
+      tag = '<span class="tag instrument">Instrument</span>';
+      details = `${escapeHtml(e.area||"")}<br>${escapeHtml((e.instruments||[]).join(", "))}`;
+    }
+    html += `<tr>
+      <td>${escapeHtml(formatDMY(e.date))}</td>
+      <td>${tag}</td>
+      <td>${details}</td>
+      <td>${escapeHtml(e.by)}</td>
+      <td>${escapeHtml(e.notes||"")}</td>
+      <td>${escapeHtml(e.submittedAt||"")}</td>
+    </tr>`;
+  });
+  html += "</tbody></table>";
+  wrap.innerHTML = html;
+}
+
+document.getElementById("filter-cat").addEventListener("change", renderTable);
+document.getElementById("refresh-log").addEventListener("click", loadEntries);
+
+// ---------- CSV export ----------
+document.getElementById("export-csv").addEventListener("click", ()=>{
+  const filterCat = document.getElementById("filter-cat").value;
+  const rows = allEntries.filter(e=> !filterCat || e.category===filterCat);
+  const header = ["Date","Category","Vehicle Type","Vehicle Name","Area","Units Serviced","Service/Instruments","Done By","Notes","Submitted At"];
+  const csvRows = [header.join(",")];
+  rows.forEach(e=>{
+    let serviceOrInstruments = "";
+    if(e.category==="vehicle") serviceOrInstruments = e.service||"";
+    else if(e.category==="aircon") serviceOrInstruments = e.service||"";
+    else if(e.category==="instrument") serviceOrInstruments = (e.instruments||[]).join(" / ");
+    const line = [
+      formatDMY(e.date), e.category, e.vehicleType||"", e.vehicleName||"",
+      e.area||"", e.unit||"", serviceOrInstruments, e.by||"", (e.notes||""), (e.submittedAt||"")
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(",");
+    csvRows.push(line);
+  });
+  const blob = new Blob([csvRows.join("\n")], {type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "logbook_export.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+</script>
+</body>
+</html>
